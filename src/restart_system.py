@@ -1,7 +1,7 @@
 
 
 def run(args):
-	main(args.topol, args.traj, args.velo, args.output, args.group, args.rst, args.temp, args.conc)
+	main(args.pdb, args.traj, args.velo, args.output, args.group, args.rst, args.temp, args.conc)
 
 
 def main(pdb, traj, velo, output, group, rst_frame, temperature, concentration):

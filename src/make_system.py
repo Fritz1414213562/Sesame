@@ -1,7 +1,7 @@
 
 
 def run(args):
-	main(args.topol, args.output, args.group, args.velo, args.rst, args.temp, args.conc)
+	main(args.pdb, args.output, args.group, args.velo, args.rst, args.temp, args.conc)
 
 
 def main(pdb, output, group, velo, rst_frame, temperature, concentration):
@@ -59,7 +59,7 @@ def main(pdb, output, group, velo, rst_frame, temperature, concentration):
 if __name__ == "__main__":
 	import argparse
 	parser = argparse.ArgumentParser()
-	parser.add_argument("--topol", '-p', required = True)
+	parser.add_argument("--pdb", '-p', required = True)
 	parser.add_argument("--group", '-g', required = True)
 	parser.add_argument("--output", '-o', required = True)
 	parser.add_argument("--velo", '-v')
@@ -67,4 +67,4 @@ if __name__ == "__main__":
 	parser.add_argument("--temp", '-t', type = float, default = 300.0)
 	parser.add_argument("--conc", '-c', type = float, default = 0.3)
 	args = parser.parse_args()
-	main(args.topol, args.output, args.group, args.velo, args.rst, args.temp, args.conc)
+	main(args.pdb, args.output, args.group, args.velo, args.rst, args.temp, args.conc)
