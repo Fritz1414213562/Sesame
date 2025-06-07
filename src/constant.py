@@ -45,8 +45,8 @@ ATOM_MASS = {
 	'DG': 150.1,  'DC': 110.1, 'DT': 125.1,
 
 	# RNA (from cafemol general.para, original and Hori-san's paper [2012 Hori JCTC])
-	'P':  62.97, 'S': 131.11, 'A': 134.1,
-	'G': 150.1,  'C': 110.1, 'U': 111.1,
+	'P':  62.97, 'S': 131.11, 'Ab': 134.1,
+	'Gb': 150.1,  'Cb': 110.1, 'Ub': 111.1,
 
 	# DNA (from Open3SPN2 paper, table12)
 	# 'DP':  94.9696, 'DS': 83.1104,  'DA': 134.122, 

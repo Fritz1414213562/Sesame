@@ -46,6 +46,9 @@ def main(pdb, output, group, velo, rst_frame, temperature, concentration):
 		if group == 'DNA':
 			atom_type = constant.ATOM_TYPE_DNA[res][name];
 			mass = constant.ATOM_MASS[res] if name == "DB" else constant.ATOM_MASS[name]
+		elif group == 'RNA':
+			atom_type = name
+			mass = constant.ATOM_MASS[name]
 		else:
 			atom_type = name;
 			mass = constant.ATOM_MASS[res]
