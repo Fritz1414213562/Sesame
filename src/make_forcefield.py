@@ -164,13 +164,13 @@ def main(ninfos, pdb, respac, exv_scale, pdns_scale, ignore, nucltype, use_cappe
 				fout.write('potential   = "Gaussian"\n')
 				fout.write('topology    = "dihedral"\n')
 				fout.write('parameters = [\n{:s}]\n\n'.format(dihd_params["3SPN2"]))
-		if len(dihd_params["RNA_1"]) < 1:
+		if len(dihd_params["RNA_1"]) > 0:
 			fout.write('[[forcefields.local]]\n')
 			fout.write('interaction = "DihedralAngle"\n')
 			fout.write('potential   = "Cosine"\n')
 			fout.write('topology    = "dihedral"\n')
 			fout.write('parameters = [\n{:s}]\n\n'.format(dihd_params["RNA_1"]))
-		if len(dihd_params["RNA_2"]) < 1:
+		if len(dihd_params["RNA_2"]) > 0:
 			fout.write('[[forcefields.local]]\n')
 			fout.write('interaction = "DihedralAngle"\n')
 			fout.write('potential   = "Cosine"\n')
