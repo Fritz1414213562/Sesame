@@ -20,12 +20,13 @@ def main():
 	parser_ff.add_argument("--pdns", '-y', type = float, default = 1.0)
 	parser_ff.add_argument("--nucltype", '-t', default = "2c")
 	parser_ff.add_argument("--use_cap", '-c', action = "store_true")
+	parser_ff.add_argument("--adjust_exclusion", '-a', action = "store_true")
 	parser_ff.set_defaults(handler = ff.run)
 
 ## System
 
 	parser_sys = subparsers.add_parser('system', help = 'see `system -h`')
-	parser_sys.add_argument("--topol", '-p', required = True)
+	parser_sys.add_argument("--pdb", '-p', required = True)
 	parser_sys.add_argument("--output", '-o', required = True)
 	parser_sys.add_argument("--group", '-g', required = True)
 	parser_sys.add_argument("--velo", '-v')
@@ -37,7 +38,7 @@ def main():
 ## Restart
 
 	parser_res = subparsers.add_parser('restart', help = 'see `system -h`')
-	parser_res.add_argument("--topol", '-p', required = True)
+	parser_res.add_argument("--pdb", '-p', required = True)
 	parser_res.add_argument("--traj", '-j', required = True)
 	parser_res.add_argument("--velo", '-v', required = True)
 	parser_res.add_argument("--output", '-o', required = True)
