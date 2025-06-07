@@ -3,15 +3,17 @@ import numpy as np
 
 
 def toml_force_field_local_bondlength(ninfo):
+	import constant
 
-	retval = {"DNA": "", "Protein": ""}
+	retval = {"DNA": "", "Protein": "", "RNA": ""}
 	with open(ninfo, 'r') as fninfo:
 		for line in fninfo:
 			if line.startswith('bond'):
 				tokens = line.split()
 				isProtein = (len(tokens) == 13) and (tokens[12] == 'pp')
 				isDNA     = len(tokens) == 12
-				if not (isProtein or isDNA):
+				isRNA     = (len(tokens) == 13) and (tokens[12] in constant.RNA_BOND_TYPE)
+				if not (isProtein or isDNA or isRNA):
 					print("Something wrong! The column number of 'bond' line is neither 12 or 13.\n{:s}".format(line), file=sys.stderr)
 					sys.exit()
 				params = {
@@ -40,6 +42,12 @@ def toml_force_field_local_bondlength(ninfo):
 					v0    = params["bd_nat"]
 					k     = params["coef_bd"]
 					retval["DNA"] += f"{{indices = [{iatom:>4d}, {jatom:>4d}], v0 = {v0:10.6f}, k = {k:10.6f}}},\n"
+				elif isRNA:
+					iatom = params["imp1"] - 1
+					jatom = params["imp2"] - 1
+					v0    = params["bd_nat"]
+					k     = params["coef_bd"]
+					retval["RNA"] += f"{{indices = [{iatom:>4d}, {jatom:>4d}], v0 = {v0:10.6f}, k = {k:10.6f}}},\n"
 	return retval
 
 
@@ -49,11 +57,15 @@ def toml_force_field_gocontact(ninfo):
 	retval = ""
 	with open(ninfo, 'r') as fninfo:
 		for line in fninfo:
-			if line.startswith('contact'):
+			#if line.startswith('contact'):
+				#tokens = line.split()
+				#isAICG = (len(tokens) == 13) and (tokens[12] == 'p-p')
+				#isGO   = len(tokens) == 12
+				#if not (isAICG or isGO):
+			if line.startswith('contact') or line.startswith('basestack'):
 				tokens = line.split()
-				isAICG = (len(tokens) == 13) and (tokens[12] == 'p-p')
-				isGO   = len(tokens) == 12
-				if not (isAICG or isGO):
+				isGoContact = (len(tokens) == 13) or (len(tokens) == 12)
+				if not isGoContact:
 					print("Something wrong! The column number of 'contact' line is neither 12 or 13.\n{:s}".format(line), file=sys.stderr)
 					sys.exit()
 				else:
@@ -82,14 +94,15 @@ def toml_force_field_gocontact(ninfo):
 
 def toml_force_field_bondangle(ninfo, topol):
 	import constant
-	retval = {"DNA": "", "Protein": "", "Flexible": ""}
+	retval = {"DNA": "", "Protein": "", "Flexible": "", "RNA": ""}
 	with open(ninfo, 'r') as fninfo:
 		for line in fninfo:
 			if line.startswith('aicg13') or line.startswith('angl'):
 				tokens = line.split()
 				isProtein = len(tokens) == 16 and tokens[15] == 'ppp' and line.startswith('aicg13')
 				isDNA     = len(tokens) == 14 and line.startswith('angl')
-				if not (isProtein or isDNA):
+				isRNA     = len(tokens) == 15 and (tokens[14] in constant.RNA_ANGLE_TYPE) and line.startswith('angl')
+				if not (isProtein or isDNA or isRNA):
 				#	print("Something wrong! The column number of 'aicg13' line is neither 14 or 16.\n{:s}".format(line), file=sys.stderr)
 				#	sys.exit()
 					pass
@@ -147,12 +160,42 @@ def toml_force_field_bondangle(ninfo, topol):
 					v0    = params["ba_nat"] * np.pi / 180.0
 					k     = params["coef_ba"]
 					retval["DNA"] += f'{{indices = [{iatom:>4d}, {jatom:>4d}, {katom:>4d}], k = {k:10.6f}, v0 = {v0:10.6f}}},\n'
+				elif isRNA:
+					params = {
+						'record':             tokens[0],
+						'iparam':             int(tokens[1]),
+						'iunit1':             int(tokens[2]),
+						'iunit2':             int(tokens[3]),
+						'imp1':               int(tokens[4]),
+						'imp2':               int(tokens[5]),
+						'imp3':               int(tokens[6]),
+						'imp1un':             int(tokens[7]),
+						'imp2un':             int(tokens[8]),
+						'imp3un':             int(tokens[9]),
+						'ba_nat':             float(tokens[10]),
+						'factor_ba':          float(tokens[11]),
+						'correct_ba_mgo':     float(tokens[12]),
+						'coef_ba':            float(tokens[13]),
+					}
+					iatom = params["imp1"] - 1
+					jatom = params["imp2"] - 1
+					katom = params["imp3"] - 1
+					v0    = params["ba_nat"] * np.pi / 180.0
+					k     = params["coef_ba"]
+					retval["RNA"] += f'{{indices = [{iatom:>4d}, {jatom:>4d}, {katom:>4d}], k = {k:10.6f}, v0 = {v0:10.6f}}},\n'
 	return retval
 
 
 def toml_force_field_dihedralangle(ninfo, topol):
 	import constant
-	retval = {"3SPN2": "", "3SPN2C_1": "", "3SPN2C_2": "", "Protein": "", "Flexible": ""}
+	retval = {\
+		"3SPN2": "",\
+		"3SPN2C_1": "",\
+		"3SPN2C_2": "",\
+		"Protein": "",\
+		"Flexible": "",\
+		"RNA_1": "",\
+		"RNA_2": "",}
 	with open(ninfo, 'r') as fninfo:
 		for line in fninfo:
 			if line.startswith('aicgdih') or line.startswith('dihd'):
@@ -161,7 +204,8 @@ def toml_force_field_dihedralangle(ninfo, topol):
 				is3SPN2C_1 = len(tokens) == 18 and tokens[17] == 'N2P1' and line.startswith('dihd')
 				is3SPN2C_2 = len(tokens) == 18 and tokens[17] == 'N2P2' and line.startswith('dihd')
 				is3SPN2    = len(tokens) == 17 and line.startswith('dihd')
-				if not (isProtein or is3SPN2C_1 or is3SPN2C_2 or is3SPN2):
+				isRNA      = len(tokens) == 18 and (tokens[17] in constant.RNA_DIHEDRAL_TYPE) and line.startswith('dihd')
+				if not (isProtein or is3SPN2C_1 or is3SPN2C_2 or is3SPN2 or isRNA):
 				#	print("Something wrong! The column number of 'aicg13' line is not 18.\n{:s}".format(line), file=sys.stderr)
 				#	sys.exit()
 					pass
@@ -298,6 +342,38 @@ def toml_force_field_dihedralangle(ninfo, topol):
 					k     =  -1.43403
 					sigma =   0.3
 					retval["3SPN2"] += f'{{indices = [{iatom:>4d}, {jatom:>4d}, {katom:>4d}, {latom:>4d}], v0 = {v0:>10.6f}, k = {k:>10.6f}, sigma = {sigma:>10.6f}  }},\n'
+				elif isRNA:
+					params = {
+						'record':          tokens[0],
+						'iparam':          int(tokens[1]),
+						'iunit1':          int(tokens[2]),
+						'iunit2':          int(tokens[3]),
+						'imp1':            int(tokens[4]),
+						'imp2':            int(tokens[5]),
+						'imp3':            int(tokens[6]),
+						'imp4':            int(tokens[7]),
+						'imp1un':          int(tokens[8]),
+						'imp2un':          int(tokens[9]),
+						'imp3un':          int(tokens[10]),
+						'imp4un':          int(tokens[11]),
+						'dih_nat':         float(tokens[12]),
+						'factor_dih':      float(tokens[13]),
+						'correct_dih_mgo': float(tokens[14]),
+						'coef_dih_1':      float(tokens[15]),
+						'coef_dih_3':      float(tokens[16]),
+						#'batype':             columns[15]
+					}
+					iatom = params["imp1"] - 1
+					jatom = params["imp2"] - 1
+					katom = params["imp3"] - 1
+					latom = params["imp4"] - 1
+					v0    = params["dih_nat"] * np.pi / 180.0
+					k_1   = params["coef_dih_1"] 
+					k_2   = params["coef_dih_1"] * 0.5
+					n_1   = 1
+					n_2   = 3
+					retval["RNA_1"] += f'{{indices = [{iatom:>4d}, {jatom:>4d}, {katom:>4d}, {latom:>4d}], v0 = {v0:>10.6f}, k = {k_1:>10.6f}, n = {n_1:2d}}},\n'
+					retval["RNA_2"] += f'{{indices = [{iatom:>4d}, {jatom:>4d}, {katom:>4d}, {latom:>4d}], v0 = {v0:>10.6f}, k = {k_2:>10.6f}, n = {n_2:2d}}},\n'
 	return retval
 
 
@@ -343,6 +419,8 @@ def toml_force_field_excluded_volume_params(topol, exv_scale):
 		radius = ...
 		if constant.GROUP_NAME[res] == "DNA":
 			radius = constant.PARAM_EXV_SIGMA[res] if name == "DB" else constant.PARAM_EXV_SIGMA[name]
+		elif constant.GROUP_NAME[res] == "RNA":
+			radius = constant.PARAM_EXV_SIGMA[name]
 		else:
 			radius = constant.PARAM_EXV_SIGMA[res]
 		radius = 0.5 * exv_scale * radius
@@ -367,6 +445,9 @@ def toml_force_field_debye_huckel_electrostatics_params(topol, respac_charges = 
 		elif res in ("ASP", "GLU"):
 			charges[iatom] = -1.0
 		elif res in ("DA", "DT", "DG", "DC") and name == "DP":
+			charges[iatom] = -1.0
+			intra_dnacharges[iatom] = -0.6
+		elif res in ("RA", "RU", "RG", "RC") and name == "P":
 			charges[iatom] = -1.0
 			intra_dnacharges[iatom] = -0.6
 
@@ -401,6 +482,17 @@ def toml_force_field_hydrogen_bonding_params(ninfo, topol, pdns_scale):
 			index_phos  = topol.select(f'resid {ires} and name == "DP"')
 			index_sugar = topol.select(f'resid {ires} and name == "DS"')
 			index_base  = topol.select(f'resid {ires} and name == "DB"')
+			if len(index_phos) == 0:
+				continue
+			else:
+				index_phos  = index_phos[0]
+				index_sugar = index_sugar[0]
+				index_base  = index_base[0]
+				retval += f'{{index = {index_phos:>4d}, S3 = {index_sugar:>4d}, kind = "DNA"}},\n'
+		elif group == "RNA":
+			index_phos  = topol.select(f'resid {ires} and name == "P"')
+			index_sugar = topol.select(f'resid {ires} and name == "S"')
+			index_base  = topol.select(f'resid {ires} and ((name == "Ab") or (name == "Gb") or (name == "Cb") or (name == "Ub"))')
 			if len(index_phos) == 0:
 				continue
 			else:

@@ -7,10 +7,10 @@ import sys
 
 
 def run(args):
-	main(args.ninfo, args.pdb, args.respac, args.exv, args.pdns, args.ignore, args.nucltype, args.use_cap, args.output)
+	main(args.ninfo, args.pdb, args.respac, args.exv, args.pdns, args.ignore, args.nucltype, args.use_cap, args.adjust_exclusion, args.output)
 
 
-def main(ninfos, pdb, respac, exv_scale, pdns_scale, ignore, nucltype, use_capped_go, out):
+def main(ninfos, pdb, respac, exv_scale, pdns_scale, ignore, nucltype, use_capped_go, adjust_exclusion, out):
 
 	bond_params = ...
 	go_params = ...
@@ -56,14 +56,19 @@ def main(ninfos, pdb, respac, exv_scale, pdns_scale, ignore, nucltype, use_cappe
 
 			bond_params["DNA"]      += tmp_bond_params["DNA"]
 			bond_params["Protein"]  += tmp_bond_params["Protein"]
+			bond_params["RNA"]      += tmp_bond_params["RNA"]
 			go_params               += tmp_go_params
 			angl_params["DNA"]      += tmp_angl_params["DNA"]
 			angl_params["Protein"]  += tmp_angl_params["Protein"]
 			angl_params["Flexible"] += tmp_angl_params["Flexible"]
-			dihd_params["DNA1"]     += tmp_dihd_params["DNA1"]
-			dihd_params["DNA2"]     += tmp_dihd_params["DNA2"]
+			angl_params["RNA"]      += tmp_angl_params["RNA"]
+			dihd_params["3SPN2C_1"] += tmp_dihd_params["3SPN2C_1"]
+			dihd_params["3SPN2C_2"] += tmp_dihd_params["3SPN2C_2"]
+			dihd_params["3SPN2"]    += tmp_dihd_params["3SPN2"]
 			dihd_params["Protein"]  += tmp_dihd_params["Protein"]
 			dihd_params["Flexible"] += tmp_dihd_params["Flexible"]
+			dihd_params["RNA_1"]    += tmp_dihd_params["RNA_1"]
+			dihd_params["RNA_2"]    += tmp_dihd_params["RNA_2"]
 			pdns_params             += tmp_pdns_params
 	
 	with open(out, 'w') as fout:
@@ -82,6 +87,12 @@ def main(ninfos, pdb, respac, exv_scale, pdns_scale, ignore, nucltype, use_cappe
 			fout.write('potential   = "3SPN2Bond"\n')
 			fout.write('topology    = "bond"\n')
 			fout.write('parameters = [\n{:s}]\n\n'.format(bond_params["DNA"]))
+		if len(bond_params["RNA"]) > 0:
+			fout.write('[[forcefields.local]]\n')
+			fout.write('interaction = "BondLength"\n')
+			fout.write('potential   = "Harmonic"\n')
+			fout.write('topology    = "bond"\n')
+			fout.write('parameters = [\n{:s}]\n\n'.format(bond_params["RNA"]))
 		# Go-contact
 		if len(go_params) > 0:
 			fout.write('[[forcefields.local]]\n')
@@ -108,6 +119,12 @@ def main(ninfos, pdb, respac, exv_scale, pdns_scale, ignore, nucltype, use_cappe
 			fout.write('potential   = "Harmonic"\n')
 			fout.write('topology    = "angle"\n')
 			fout.write('parameters = [\n{:s}]\n\n'.format(angl_params["DNA"]))
+		if len(angl_params["RNA"]) > 0:
+			fout.write('[[forcefields.local]]\n')
+			fout.write('interaction = "BondAngle"\n')
+			fout.write('potential   = "Harmonic"\n')
+			fout.write('topology    = "angle"\n')
+			fout.write('parameters = [\n{:s}]\n\n'.format(angl_params["RNA"]))
 		# Dihedral angle
 		if len(dihd_params["Protein"]) > 0:
 			fout.write('[[forcefields.local]]\n')
@@ -147,6 +164,18 @@ def main(ninfos, pdb, respac, exv_scale, pdns_scale, ignore, nucltype, use_cappe
 				fout.write('potential   = "Gaussian"\n')
 				fout.write('topology    = "dihedral"\n')
 				fout.write('parameters = [\n{:s}]\n\n'.format(dihd_params["3SPN2"]))
+		if len(dihd_params["RNA_1"]) < 1:
+			fout.write('[[forcefields.local]]\n')
+			fout.write('interaction = "DihedralAngle"\n')
+			fout.write('potential   = "Cosine"\n')
+			fout.write('topology    = "dihedral"\n')
+			fout.write('parameters = [\n{:s}]\n\n'.format(dihd_params["RNA_1"]))
+		if len(dihd_params["RNA_2"]) < 1:
+			fout.write('[[forcefields.local]]\n')
+			fout.write('interaction = "DihedralAngle"\n')
+			fout.write('potential   = "Cosine"\n')
+			fout.write('topology    = "none"\n')
+			fout.write('parameters = [\n{:s}]\n\n'.format(dihd_params["RNA_2"]))
 		# Base
 		if len(base_params["BaseStacking"]) > 0:
 			fout.write('[[forcefields.local]]\n')
@@ -160,13 +189,19 @@ def main(ninfos, pdb, respac, exv_scale, pdns_scale, ignore, nucltype, use_cappe
 			fout.write('[[forcefields.global]]\n')
 			fout.write('interaction = "3SPN2BasePair"\n')
 			fout.write('potential   = "{:s}"\n'.format(nucl_ff_name))
-			fout.write('ignore.particles_within.nucleotide = 3\n')
+			if adjust_exclusion:
+				fout.write('ignore.particles_within.nucleotide = 2\n')
+			else:
+				fout.write('ignore.particles_within.nucleotide = 3\n')
 			fout.write('parameters = [\n{:s}]\n\n'.format(base_params["BasePair"]))
 		if len(base_params["CrossStacking"]) > 0:
 			fout.write('[[forcefields.global]]\n')
 			fout.write('interaction = "3SPN2CrossStacking"\n')
 			fout.write('potential   = "{:s}"\n'.format(nucl_ff_name))
-			fout.write('ignore.particles_within.nucleotide = 3\n')
+			if adjust_exclusion:
+				fout.write('ignore.particles_within.nucleotide = 2\n')
+			else:
+				fout.write('ignore.particles_within.nucleotide = 3\n')
 			fout.write('parameters = [\n{:s}]\n\n'.format(base_params["CrossStacking"]))
 		# Excluded Volume Interaction (w/o intra DNA)
 		if len(exv_params["Total"]) > 0:
@@ -246,5 +281,6 @@ if __name__ == "__main__":
 	parser.add_argument("--pdns", '-y', type = float, default = 1.0)
 	parser.add_argument("--nucltype", '-t', default = "2c")
 	parser.add_argument("--use_cap", '-c', action = "store_true")
+	parser.add_argument("--adjust_exclusion", '-a', action = "store_true")
 	args = parser.parse_args()
-	main(args.ninfo, args.pdb, args.respac, args.exv, args.pdns, args.ignore, args.nucltype, args.use_cap, args.output)
+	main(args.ninfo, args.pdb, args.respac, args.exv, args.pdns, args.ignore, args.nucltype, args.use_cap, args.adjust_exclusion, args.output)
