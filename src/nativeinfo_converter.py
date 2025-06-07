@@ -368,6 +368,11 @@ def toml_force_field_dihedralangle(ninfo, topol):
 					katom = params["imp3"] - 1
 					latom = params["imp4"] - 1
 					v0    = params["dih_nat"] * np.pi / 180.0
+					if v0 < -np.pi:
+						v0 += 2 * np.pi
+					if v0 >  np.pi:
+						v0 -= 2 * np.pi
+					v0 -= np.pi
 					k_1   = params["coef_dih_1"] 
 					k_2   = params["coef_dih_1"] * 0.5
 					n_1   = 1
