@@ -7,6 +7,7 @@ GROUP_NAME = {
 	"THR": "PRO", "TRP": "PRO", "TYR": "PRO", "VAL": "PRO",
 	"OTH": "PRO",
 	"DA" : "DNA", "DT" : "DNA", "DG" : "DNA", "DC" : "DNA",
+	"RA" : "RNA", "RU" : "RNA", "RG" : "RNA", "RC" : "RNA",
 }
 PARAM_EXV_SIGMA = { # From cafemol exv.para
 	# Protein
@@ -18,6 +19,11 @@ PARAM_EXV_SIGMA = { # From cafemol exv.para
 
 	# DNA
 	"DP": 3.112, "DS": 3.689, "DA": 4.341, "DG": 4.631, "DC": 4.95,  "DT": 5.142,
+
+	# RNA
+	"P":  4.000, "S":  4.000, "Ab": 4.000, "Gb": 4.000, "Cb": 4.00 , "Ub": 4.000,
+	#"P":  3.112, "S":  3.689, "Ab": 4.500, "Gb": 4.500, "Cb": 4.50 , "Ub": 4.500,
+
 }
 ATOM_TYPE_DNA = {
 	"DA": {"DP": "P", "DS": "S", "DB": "A"},
@@ -38,9 +44,26 @@ ATOM_MASS = {
 	'DP':  94.97, 'DS': 83.11, 'DA': 134.1,
 	'DG': 150.1,  'DC': 110.1, 'DT': 125.1,
 
+	# RNA (from cafemol general.para, original and Hori-san's paper [2012 Hori JCTC])
+	'P':  62.97, 'S': 131.11, 'A': 134.1,
+	'G': 150.1,  'C': 110.1, 'U': 111.1,
+
 	# DNA (from Open3SPN2 paper, table12)
 	# 'DP':  94.9696, 'DS': 83.1104,  'DA': 134.122, 
 	# 'DG': 150.1214, 'DC': 110.0964, 'DT': 125.1078,
+}
+RNA_BOND_TYPE = {
+	"PS", "SP", "SA", "SU", "SG", "SC", "SR", "SY", "SN"
+}
+RNA_ANGLE_TYPE = {
+	"ASP", "USP", "GSP", "CSP", "RSP", "YSP", "NSP",
+	"PSP", "SPS",
+	"PSA", "PSU", "PSG", "PSC", "PSR", "PSY", "PSN",
+}
+RNA_DIHEDRAL_TYPE = {
+	"ASPS", "USPS", "GSPS", "CSPS", "RSPS", "YSPS", "NSPS",
+	"PSPS", "SPSP",
+	"SPSA", "SPSU", "SPSG", "SPSC", "SPSR", "SPSY", "SPSN",
 }
 NM2ANGSTROM = 10.0
 KJPERKCAL = 4.1868
