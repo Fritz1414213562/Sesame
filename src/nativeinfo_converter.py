@@ -506,9 +506,11 @@ def toml_force_field_hydrogen_bonding_params(ninfo, topol, pdns_scale):
 				index_base  = index_base[0]
 				retval += f'{{index = {index_phos:>4d}, S3 = {index_sugar:>4d}, kind = "DNA"}},\n'
 
+	containPDNS = False
 	with open(ninfo, 'r') as fninfo:
 		for line in fninfo:
 			if line.startswith('pdns'):
+				containPDNS = True
 				tokens = line.split()
 				params = {
 					'record':              tokens[0],
@@ -532,4 +534,7 @@ def toml_force_field_hydrogen_bonding_params(ninfo, topol, pdns_scale):
 					phi      = params['phi']
 					scale_factor = -params['scale_factor'] * pdns_scale
 					retval += f'{{index = {index:>4d}, kind = "Protein", PN = {index_n:>4d}, PC = {index_c:>4d}, k = {scale_factor:>4.2f}, r0 = {distance:>8.4f}, theta0 = {theta:>8.4f}, phi0 = {phi:>8.4f}}},\n'
-	return retval
+	if containPDNS:
+		return retval
+	else:
+		return ""
