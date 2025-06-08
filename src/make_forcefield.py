@@ -62,9 +62,11 @@ def main(ninfos, pdb, respac, exv_scale, pdns_scale, ignore, nucltype, use_cappe
 			angl_params["Protein"]  += tmp_angl_params["Protein"]
 			angl_params["Flexible"] += tmp_angl_params["Flexible"]
 			angl_params["RNA"]      += tmp_angl_params["RNA"]
-			dihd_params["3SPN2C_1"] += tmp_dihd_params["3SPN2C_1"]
-			dihd_params["3SPN2C_2"] += tmp_dihd_params["3SPN2C_2"]
-			dihd_params["3SPN2"]    += tmp_dihd_params["3SPN2"]
+			if nucl_ff_name == "3SPN2C":
+				dihd_params["3SPN2C_1"] += tmp_dihd_params["3SPN2C_1"]
+				dihd_params["3SPN2C_2"] += tmp_dihd_params["3SPN2C_2"]
+			elif nucl_ff_name == "3SPN2":
+				dihd_params["3SPN2"]    += tmp_dihd_params["3SPN2"]
 			dihd_params["Protein"]  += tmp_dihd_params["Protein"]
 			dihd_params["Flexible"] += tmp_dihd_params["Flexible"]
 			dihd_params["RNA_1"]    += tmp_dihd_params["RNA_1"]
