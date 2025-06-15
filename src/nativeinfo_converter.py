@@ -494,17 +494,17 @@ def toml_force_field_hydrogen_bonding_params(ninfo, topol, pdns_scale):
 				index_sugar = index_sugar[0]
 				index_base  = index_base[0]
 				retval += f'{{index = {index_phos:>4d}, S3 = {index_sugar:>4d}, kind = "DNA"}},\n'
-		elif group == "RNA":
-			index_phos  = topol.select(f'resid {ires} and name == "P"')
-			index_sugar = topol.select(f'resid {ires} and name == "S"')
-			index_base  = topol.select(f'resid {ires} and ((name == "Ab") or (name == "Gb") or (name == "Cb") or (name == "Ub"))')
-			if len(index_phos) == 0:
-				continue
-			else:
-				index_phos  = index_phos[0]
-				index_sugar = index_sugar[0]
-				index_base  = index_base[0]
-				retval += f'{{index = {index_phos:>4d}, S3 = {index_sugar:>4d}, kind = "DNA"}},\n'
+		#elif group == "RNA":
+		#	index_phos  = topol.select(f'resid {ires} and name == "P"')
+		#	index_sugar = topol.select(f'resid {ires} and name == "S"')
+		#	index_base  = topol.select(f'resid {ires} and ((name == "Ab") or (name == "Gb") or (name == "Cb") or (name == "Ub"))')
+		#	if len(index_phos) == 0:
+		#		continue
+		#	else:
+		#		index_phos  = index_phos[0]
+		#		index_sugar = index_sugar[0]
+		#		index_base  = index_base[0]
+		#		retval += f'{{index = {index_phos:>4d}, S3 = {index_sugar:>4d}, kind = "DNA"}},\n'
 
 	containPDNS = False
 	with open(ninfo, 'r') as fninfo:
